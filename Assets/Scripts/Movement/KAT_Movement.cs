@@ -51,8 +51,6 @@ public class KAT_Movement : MonoBehaviour
         if (Input.GetMouseButton(0)&&attackGO.activeInHierarchy==false&&Time.time>lastAttack)
         {
             attackGO.SetActive(true);
-            Debug.Log(Time.time);
-            Console.WriteLine(Time.deltaTime+attackCooldown);
             lastAttack = Time.time+attackCooldown;
         }
         if (isDashing) return;
@@ -79,7 +77,7 @@ public class KAT_Movement : MonoBehaviour
         }
         moveDir = new Vector3(x, y).normalized;
         //Flip
-        isFacingLeft = GameObject.FindGameObjectWithTag("Pointer").transform.position.x - transform.position.x < 0;
+        isFacingLeft = PointerScript.CursorToWorld(Input.mousePosition).x - transform.position.x < 0;
         anim.SetBool("isFacingLeft", isFacingLeft);
         anim.gameObject.transform.rotation = Quaternion.Euler(new Vector3(0f, (isFacingLeft) ? 180f : 0f, 0f));
         //Dashing
@@ -104,7 +102,7 @@ public class KAT_Movement : MonoBehaviour
         dashCurrentEnergy -= 100;
         anim.SetBool("isDashing", isDashing);
         hitBox.isTrigger = true;
-        Vector3 dashDirection = (GameObject.FindGameObjectWithTag("Pointer").transform.position - transform.position).normalized;
+        Vector3 dashDirection = (PointerScript.CursorToWorld(Input.mousePosition) - transform.position).normalized;
         rb.velocity = dashDirection * dashPower;
         trailRenderer.emitting = true;
         yield return new WaitForSeconds(dashTime);

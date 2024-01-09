@@ -7,12 +7,10 @@ public class SwordBehaviour : MonoBehaviour
 {
     private KAT_Movement kat;
     public float range;
-    public Transform target;
     // Start is called before the first frame update
     void Start()
     {
         kat= GetComponentInParent<KAT_Movement>();
-        target = GameObject.FindGameObjectWithTag("Pointer").transform;
 
 
     }
@@ -20,8 +18,8 @@ public class SwordBehaviour : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.localPosition =(target.position - kat.transform.position).normalized*range;
-        transform.right = target.position - transform.position;
+        transform.localPosition =(PointerScript.CursorToWorld(Input.mousePosition) - kat.transform.position).normalized*range;
+        transform.right = PointerScript.CursorToWorld(Input.mousePosition) - transform.position;
     }
     public void StopAttack()
     {
@@ -29,7 +27,6 @@ public class SwordBehaviour : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("collided");
         if (collision.tag.Equals("EnergyPole") && collision.gameObject.GetComponent<EnergyPoleBehaviour>().hasEnergy)
         {
 
