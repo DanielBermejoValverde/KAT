@@ -15,14 +15,17 @@ public class KAT_Movement : MonoBehaviour
     public Animator anim;
     private Vector3 moveDir;
     //Combat Variables
-    public GameObject attackGO;
+    private GameObject attackGO;
     public float attackSpeed = 0.1f;
     public float attackCooldown = 1;
     public float lastAttack;
-    private Collider2D hitBox;
+    private BoxCollider2D walkBox;
+    private CapsuleCollider2D hitBox;
+    public Vector3 dashDirection;
+    
     //Dashing Variables
     public TrailRenderer trailRenderer;
-    private bool isDashing;
+    public bool isDashing;
     private bool canDash=true;
     public float dashPower;
     public float dashCurrentEnergy=100;
@@ -38,7 +41,8 @@ public class KAT_Movement : MonoBehaviour
         attackGO=transform.GetChild(0).gameObject;
         dashEnergyUI = GameObject.FindGameObjectWithTag("DashEnergyUi").GetComponent<Image>();
         dashEnergyLightning = GameObject.FindGameObjectWithTag("DashEnergyLightning").GetComponent<Image>();
-        hitBox = GetComponent<Collider2D>();
+        walkBox = GetComponent<BoxCollider2D>();
+        hitBox = GetComponent<CapsuleCollider2D>();
         lastAttack = Time.deltaTime;
     }
     
@@ -80,6 +84,7 @@ public class KAT_Movement : MonoBehaviour
         isFacingLeft = PointerScript.CursorToWorld(Input.mousePosition).x - transform.position.x < 0;
         anim.SetBool("isFacingLeft", isFacingLeft);
         anim.gameObject.transform.rotation = Quaternion.Euler(new Vector3(0f, (isFacingLeft) ? 180f : 0f, 0f));
+        hitBox.offset = (isFacingLeft) ? new Vector2(-0.1f,-0.05f) : new Vector2(0.1f, -0.05f);
         //Dashing
         if (Input.GetKeyDown(KeyCode.LeftShift) && canDash && dashCurrentEnergy==dashMaxEnergy) StartCoroutine(Dash());
     }
@@ -101,12 +106,12 @@ public class KAT_Movement : MonoBehaviour
         isDashing = true;
         dashCurrentEnergy -= 100;
         anim.SetBool("isDashing", isDashing);
-        hitBox.isTrigger = true;
-        Vector3 dashDirection = (PointerScript.CursorToWorld(Input.mousePosition) - transform.position).normalized;
+        walkBox.isTrigger = true;
+        dashDirection = (PointerScript.CursorToWorld(Input.mousePosition) - transform.position).normalized;
         rb.velocity = dashDirection * dashPower;
         trailRenderer.emitting = true;
         yield return new WaitForSeconds(dashTime);
-        hitBox.isTrigger = false;
+        walkBox.isTrigger = false;
         trailRenderer.emitting = false;
         isDashing = false;
         canDash = true;

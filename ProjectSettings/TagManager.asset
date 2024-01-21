@@ -3,7 +3,11 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - EnergyPole
+  - DashEnergyUi
+  - DashEnergyLightning
+  - PlayerSword
   layers:
   - Default
   - TransparentFX
@@ -11,7 +15,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Terrain
   - 
   - 
   - 
@@ -38,6 +42,12 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Terrain
+    uniqueID: 524282307
+    locked: 0
+  - name: VFX
+    uniqueID: 3366013417
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
