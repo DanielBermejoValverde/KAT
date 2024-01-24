@@ -20,7 +20,7 @@ public class KAT_Movement : MonoBehaviour
     public float attackCooldown = 1;
     public float lastAttack;
     private BoxCollider2D walkBox;
-    private CapsuleCollider2D hitBox;
+    public CapsuleCollider2D hitBox;
     public Vector3 dashDirection;
     
     //Dashing Variables
@@ -34,6 +34,11 @@ public class KAT_Movement : MonoBehaviour
     public float dashTime;
     private Image dashEnergyUI,dashEnergyLightning;
 
+    //Midair Variables
+    public bool isMidair=false;
+    private float timeMidair;
+    public float maxTimeMidair;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -42,7 +47,7 @@ public class KAT_Movement : MonoBehaviour
         dashEnergyUI = GameObject.FindGameObjectWithTag("DashEnergyUi").GetComponent<Image>();
         dashEnergyLightning = GameObject.FindGameObjectWithTag("DashEnergyLightning").GetComponent<Image>();
         walkBox = GetComponent<BoxCollider2D>();
-        hitBox = GetComponent<CapsuleCollider2D>();
+        //hitBox = GetComponent<CapsuleCollider2D>();
         lastAttack = Time.deltaTime;
     }
     
@@ -52,12 +57,33 @@ public class KAT_Movement : MonoBehaviour
 
         CheckDashEnergy();
         //Attack
+
         if (Input.GetMouseButton(0)&&attackGO.activeInHierarchy==false&&Time.time>lastAttack)
         {
             attackGO.SetActive(true);
             lastAttack = Time.time+attackCooldown;
         }
+
         if (isDashing) return;
+
+        //Dashing
+        if (Input.GetKeyDown(KeyCode.LeftShift) && canDash && dashCurrentEnergy == dashMaxEnergy) StartCoroutine(Dash());
+
+
+        //Midair, cant move, has x seconds to dash again
+        //isMidair=Physics.Raycast(new Vector3(walkBox.offset.x, walkBox.offset.y, 0.0f),)
+
+        //pseudocodigo: si no detecto terreno detrás mia isMidair=true, luego si midair=true && no estoy dasheando (ya se comprueba antes) compruebo que el tiempo que llevo mid air no supere x,
+        //problema: reiniciar de manera correcta y eficiente el tiempo midair, no quiero que este comprobando continualmente
+        if (isMidair) {
+            if (timeMidair < Time.time)
+            {
+
+                moveDir=new Vector3(0.0f,0.0f,0.0f);
+                //Fall
+                Debug.Log("Fall");
+            }
+            return; }
         //Movement
         x = Input.GetAxisRaw("Horizontal");
         y = Input.GetAxisRaw("Vertical");
@@ -85,8 +111,6 @@ public class KAT_Movement : MonoBehaviour
         anim.SetBool("isFacingLeft", isFacingLeft);
         anim.gameObject.transform.rotation = Quaternion.Euler(new Vector3(0f, (isFacingLeft) ? 180f : 0f, 0f));
         hitBox.offset = (isFacingLeft) ? new Vector2(-0.1f,-0.05f) : new Vector2(0.1f, -0.05f);
-        //Dashing
-        if (Input.GetKeyDown(KeyCode.LeftShift) && canDash && dashCurrentEnergy==dashMaxEnergy) StartCoroutine(Dash());
     }
 
 
@@ -104,24 +128,33 @@ public class KAT_Movement : MonoBehaviour
     {
         canDash = false;
         isDashing = true;
-        dashCurrentEnergy -= 100;
         anim.SetBool("isDashing", isDashing);
+        dashCurrentEnergy -= 100;
         walkBox.isTrigger = true;
         dashDirection = (PointerScript.CursorToWorld(Input.mousePosition) - transform.position).normalized;
         rb.velocity = dashDirection * dashPower;
         trailRenderer.emitting = true;
         yield return new WaitForSeconds(dashTime);
-        walkBox.isTrigger = false;
         trailRenderer.emitting = false;
+        walkBox.isTrigger = false;
         isDashing = false;
-        canDash = true;
         anim.SetBool("isDashing", isDashing);
-
+        canDash = true;
+        //Detect is midair, timeMidair=Time.time+maxTimeMidair
+        if (isMidair) timeMidair = Time.time + maxTimeMidair;
     }
     private void CheckDashEnergy()
     {
         dashEnergyUI.fillAmount = dashCurrentEnergy / dashMaxEnergy;
         bool active=(dashCurrentEnergy==dashMaxEnergy) ? true : false;
         dashEnergyLightning.gameObject.SetActive(active);
+    }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (isDashing&& collision.gameObject.tag.Equals("Roof"))
+        {
+            isMidair = !isMidair;
+            Debug.Log(isMidair);
+        }
     }
 }

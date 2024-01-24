@@ -8,11 +8,12 @@ TagManager:
   - DashEnergyUi
   - DashEnergyLightning
   - PlayerSword
+  - Roof
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
   - Terrain
